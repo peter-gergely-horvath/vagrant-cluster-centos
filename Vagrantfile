@@ -7,13 +7,40 @@ Vagrant.require_version ">= 1.6.0"
 
 # Defaults for config options defined in CONFIG
 $num_instances = 3
-$instance_name_prefix = "centos"
+$instance_name_prefix = "hadoop"
 $enable_serial_logging = false
 $share_home = false
 $vm_gui = false
-$vm_memory = 3072
-$vm_cpus = 2
+$vm_memory = 8192
+$vm_cpus = 1
 $forwarded_ports = {}
+
+$script = <<-SCRIPT
+
+echo Disabling the firewall
+sudo systemctl disable firewalld
+sudo systemctl stop firewalld
+
+echo Disabling SELinux
+sudo setenforce 0
+sudo sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+
+echo Installing NTPD
+sudo yum install ntp ntpdate ntp-doc
+sudo echo "server 0.pool.ntp.org" >> /etc/ntp.conf
+sudo echo "server 1.pool.ntp.org" >> /etc/ntp.conf
+sudo echo "server 3.pool.ntp.org" >> /etc/ntp.conf
+
+echo Starting NTPD
+sudo systemctl enable ntpd
+sudo systemctl start ntpd
+
+echo Synchronizing the system clock to the NTP server
+sudo ntpdate -u server
+
+echo Synchronizing the hardware clock to the system clock
+sudo hwclock --systohc
+SCRIPT
 
 # Attempt to apply the deprecated environment variable NUM_INSTANCES to
 # $num_instances while allowing config.rb to override it
@@ -38,7 +65,10 @@ Vagrant.configure("2") do |config|
   # always use Vagrants insecure key
   config.ssh.insert_key = false
 
-  config.vm.box = "centos/7"
+
+  config.vm.box = "centos/8"
+  config.vm.provision "shell", inline: $script
+  config.vagrant.plugins = [ "vagrant-hostmanager" ]
 
   # enable hostmanager
   config.hostmanager.enabled = true
