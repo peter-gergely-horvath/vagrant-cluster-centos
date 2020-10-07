@@ -25,18 +25,18 @@ echo Disabling SELinux
 sudo setenforce 0
 sudo sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
 
-echo Installing NTPD
-sudo yum install ntp ntpdate ntp-doc
-sudo echo "server 0.pool.ntp.org" >> /etc/ntp.conf
-sudo echo "server 1.pool.ntp.org" >> /etc/ntp.conf
-sudo echo "server 3.pool.ntp.org" >> /etc/ntp.conf
+echo Installing chronyd
+sudo dnf install chrony --assumeyes
 
-echo Starting NTPD
-sudo systemctl enable ntpd
-sudo systemctl start ntpd
 
 echo Synchronizing the system clock to the NTP server
-sudo ntpdate -u server
+systemctl stop chronyd
+sudo chronyd -q 'pool pool.ntp.org iburst'
+
+sudo systemctl enable chronyd
+
+echo Starting chronyd
+systemctl restart chronyd
 
 echo Synchronizing the hardware clock to the system clock
 sudo hwclock --systohc
