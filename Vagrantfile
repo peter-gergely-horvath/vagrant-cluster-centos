@@ -40,6 +40,13 @@ systemctl restart chronyd
 
 echo Synchronizing the hardware clock to the system clock
 sudo hwclock --systohc
+
+echo Installing Python 2.7
+sudo yum install centos-release-scl -y
+sudo yum install scl-utils -y
+sudo yum install python27 -y
+python --version
+
 SCRIPT
 
 # Attempt to apply the deprecated environment variable NUM_INSTANCES to
@@ -66,7 +73,7 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
 
 
-  config.vm.box = "centos/8"
+  config.vm.box = "centos/7"
   config.vm.provision "shell", inline: $script
   config.vagrant.plugins = [ "vagrant-hostmanager" ]
 
