@@ -26,7 +26,7 @@ sudo setenforce 0
 sudo sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
 
 echo Installing chronyd
-sudo dnf install chrony --assumeyes
+sudo yum install chrony --assumeyes
 
 
 echo Synchronizing the system clock to the NTP server
@@ -46,6 +46,10 @@ sudo yum install centos-release-scl -y
 sudo yum install scl-utils -y
 sudo yum install python27 -y
 python --version
+
+
+echo Installing OpenJDK Java 8
+sudo yum install java-1.8.0-openjdk-devel -y
 
 SCRIPT
 
